@@ -1,0 +1,60 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+ProGen CLI is the **command-line interface** package for [ProGen](https://github.com/andyl/pro_gen). It ships as a Mix archive (`mix archive.install github andyl/pro_gen_cli`) and provides `mix progen.*` tasks for running actions, validations, and commands from the terminal.
+
+This is the **thin archive** — it contains only Mix tasks, shared CLI helpers, and the bootstrap/installer modules. All action and validation modules live in the core `pro_gen` package, which is fetched by `mix progen.install` into `~/.config/pro_gen/deps/`.
+
+## Build & Development Commands
+
+```bash
+mix compile          # Compile the project
+mix test             # Run all tests (ExUnit)
+mix test test/file.exs          # Run a single test file
+mix test test/file.exs:LINE     # Run a specific test by line number
+mix format           # Format code
+mix format --check-formatted    # Check formatting
+mix deps.get         # Fetch dependencies
+mix archive.build    # Build the .ez archive
+```
+
+## Architecture
+
+### Relationship to `pro_gen`
+
+| Package | Repo | Contains | Ships as |
+|---|---|---|---|
+| `pro_gen` | `andyl/pro_gen` | Action/Validate behaviours, registries, built-in actions/validations, Script, Config | Hex package or GitHub dep |
+| `pro_gen_cli` | `andyl/pro_gen_cli` | Mix tasks, CLI helpers, Bootstrap, GlobalConfig, Installer | Mix archive |
+
+The dependency direction is one-way: `pro_gen_cli` depends on `pro_gen`, never the reverse. For local development, `mix.exs` uses `path: "../pro_gen"` when the sibling directory exists.
+
+### Modules
+
+**`ProGen.CLI`** — Shared helpers for Mix tasks: name resolution (`resolve_name/1`), argument parsing (`parse_kv_args/1`, `parse_checks/1`), output formatting (`format_table/1`, `format_list_json/1`, `format_list_text/1`), and source path lookup (`source_path/1`).
+
+**Mix Tasks (10):**
+- `mix progen.action.list` — List all registered actions (table/text/json)
+- `mix progen.action.info <name>` — Show action details
+- `mix progen.action.run <desc> <name> [args]` — Execute an action
+- `mix progen.action.cat <name>` — Display action source code
+- `mix progen.validate.list` — List all validators
+- `mix progen.validate.info <name>` — Show validator details
+- `mix progen.validate.run <name> <checks>` — Execute validation checks
+- `mix progen.validate.cat <name>` — Display validator source
+- `mix progen.command.run <desc> <command>` — Execute a shell command
+- `mix progen.puts <message>` — Print a formatted message
+
+### Namespace Conventions
+
+Both packages define modules in the `ProGen` namespace:
+- `pro_gen` owns `ProGen.*` excluding `ProGen.CLI.*`
+- `pro_gen_cli` owns `ProGen.CLI.*` and `Mix.Tasks.Progen.*`
+
+## Dependencies
+
+- **pro_gen** — Core library (path dep for local dev, github for CI)
+- **yaml_elixir** — YAML config parsing for global config
