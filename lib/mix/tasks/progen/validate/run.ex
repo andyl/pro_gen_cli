@@ -18,8 +18,8 @@ defmodule Mix.Tasks.Progen.Validate.Run do
 
   @impl true
   def run(args) do
-    ProGen.CLI.Bootstrap.ensure_loaded!()
     ProGen.CLI.maybe_start_app()
+    ProGen.CLI.Bootstrap.ensure_loaded!()
 
     case args do
       [ref | check_args] when check_args != [] ->

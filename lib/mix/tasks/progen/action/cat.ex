@@ -15,8 +15,8 @@ defmodule Mix.Tasks.Progen.Action.Cat do
 
   @impl true
   def run(args) do
-    ProGen.CLI.Bootstrap.ensure_loaded!()
     ProGen.CLI.maybe_start_app()
+    ProGen.CLI.Bootstrap.ensure_loaded!()
 
     case args do
       [ref | _] ->

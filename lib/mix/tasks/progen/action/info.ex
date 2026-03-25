@@ -18,8 +18,8 @@ defmodule Mix.Tasks.Progen.Action.Info do
 
   @impl true
   def run(args) do
-    ProGen.CLI.Bootstrap.ensure_loaded!()
     ProGen.CLI.maybe_start_app()
+    ProGen.CLI.Bootstrap.ensure_loaded!()
 
     case args do
       [ref | _] ->
