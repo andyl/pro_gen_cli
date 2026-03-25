@@ -46,9 +46,7 @@ defmodule Mix.Tasks.Progen.Action.Edit do
           cmd = System.get_env("PROGEN_EDITOR") || "vim __FILE__"
           [editor | args] = cmd
                    |> String.replace("__FILE__", path)
-                   |> IO.inspect(label: "ONE")
                    |> OptionParser.split()
-                   |> IO.inspect(label: "TWO")
           System.cmd(editor, args, stderr_to_stdout: true, into: "")
         else
           Mix.raise(
