@@ -5,6 +5,9 @@ defmodule ProGen.CLI.InstallTest do
 
   @moduletag :tmp_dir
 
+  # Use the local pro_gen as a path dep so tests never hit the network
+  @pro_gen_path Path.expand("../pro_gen", File.cwd!())
+
   setup %{tmp_dir: tmp_dir} do
     config_dir = Path.join(tmp_dir, "pro_gen")
     deps_dir = Path.join(config_dir, "deps")
@@ -18,40 +21,17 @@ defmodule ProGen.CLI.InstallTest do
     %{config_dir: config_dir, deps_dir: deps_dir}
   end
 
-  describe "mix progen.install" do
-    test "installs with no config file (ProGen core only)", %{deps_dir: deps_dir} do
-      output =
-        capture_io(fn ->
-          Mix.Tasks.Progen.Install.run([])
-        end)
+  defp write_local_config(config_dir) do
+    yaml = """
+    libs:
+      - name: pro_gen
+        path: #{@pro_gen_path}
+    """
 
-      assert output =~ "Reading config..."
-      assert output =~ "Installing ProGen core..."
-      # deps dir should have been created
-      assert File.dir?(deps_dir)
-    end
+    File.write!(Path.join(config_dir, "config.yml"), yaml)
+  end
 
-    test "installs with valid config", %{config_dir: config_dir} do
-      # Use pro_gen as a path dep pointing to the sibling repo
-      pro_gen_path = Path.expand("../pro_gen", File.cwd!())
-
-      yaml = """
-      libs:
-        - name: pro_gen
-          path: #{pro_gen_path}
-      """
-
-      File.write!(Path.join(config_dir, "config.yml"), yaml)
-
-      output =
-        capture_io(fn ->
-          Mix.Tasks.Progen.Install.run([])
-        end)
-
-      assert output =~ "Reading config..."
-      assert output =~ "Installing ProGen + 1 libraries..."
-    end
-
+  describe "config and validation errors (fast, no install)" do
     test "raises on invalid config", %{config_dir: config_dir} do
       yaml = """
       libs:
@@ -76,50 +56,73 @@ defmodule ProGen.CLI.InstallTest do
         end)
       end
     end
+  end
 
-    test "accepts --force flag" do
-      output =
-        capture_io(fn ->
-          Mix.Tasks.Progen.Install.run(["--force"])
-        end)
+  describe "full install integration (slow)" do
+    @tag :slow
+    @tag timeout: 60_000
+    test "installs, clears caches, and prints summary", %{
+      config_dir: config_dir,
+      deps_dir: deps_dir
+    } do
+      write_local_config(config_dir)
 
-      assert output =~ "Reading config..."
-    end
-
-    test "clears persistent_term caches after install" do
-      # Seed the caches
-      keys = [
+      # Seed persistent_term caches to verify they get cleared
+      cache_keys = [
         {ProGen.Actions, :actions_list},
         {ProGen.Actions, :actions_map},
         {ProGen.Validations, :validations_list},
         {ProGen.Validations, :validations_map}
       ]
 
-      Enum.each(keys, fn key ->
-        :persistent_term.put(key, :test_sentinel)
-      end)
+      Enum.each(cache_keys, &:persistent_term.put(&1, :test_sentinel))
 
-      capture_io(fn ->
-        Mix.Tasks.Progen.Install.run([])
-      end)
-
-      Enum.each(keys, fn key ->
-        assert :persistent_term.get(key, :cleared) == :cleared
-      end)
-    end
-
-    test "prints summary with skipped deps", %{deps_dir: deps_dir} do
-      # Pre-install pro_gen so it gets skipped
-      File.mkdir_p!(Path.join([deps_dir, "pro_gen", "ebin"]))
-
-      # No config file -> installs pro_gen core only, but it's already there
       output =
         capture_io(fn ->
           Mix.Tasks.Progen.Install.run([])
         end)
 
-      # Should mention something about the install
+      # Verify task output
       assert output =~ "Reading config..."
+      assert output =~ "Installing ProGen + 1 libraries..."
+      assert output =~ "Installed:"
+
+      # Verify deps dir was populated
+      assert File.dir?(deps_dir)
+
+      # Verify caches were cleared
+      Enum.each(cache_keys, fn key ->
+        assert :persistent_term.get(key, :cleared) == :cleared
+      end)
+    end
+
+    @tag :slow
+    @tag timeout: 60_000
+    test "--force reinstalls even when already present", %{
+      config_dir: config_dir,
+      deps_dir: deps_dir
+    } do
+      write_local_config(config_dir)
+
+      # Pre-populate deps dir so it looks already installed
+      File.mkdir_p!(Path.join([deps_dir, "pro_gen", "ebin"]))
+
+      # Without force — should skip
+      output_skip =
+        capture_io(fn ->
+          Mix.Tasks.Progen.Install.run([])
+        end)
+
+      assert output_skip =~ "Skipped"
+
+      # With force — should reinstall
+      output_force =
+        capture_io(fn ->
+          Mix.Tasks.Progen.Install.run(["--force"])
+        end)
+
+      assert output_force =~ "Installed:"
+      assert File.dir?(Path.join(deps_dir, "pro_gen"))
     end
   end
 end

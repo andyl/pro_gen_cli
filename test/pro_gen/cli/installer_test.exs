@@ -95,6 +95,7 @@ defmodule ProGen.CLI.InstallerTest do
   end
 
   describe "install/2 with path dep" do
+    @tag :slow
     test "creates symlink for path dep with compiled ebin", %{
       deps_dir: deps_dir,
       tmp_dir: tmp_dir
@@ -118,7 +119,7 @@ defmodule ProGen.CLI.InstallerTest do
       """)
 
       libs = [
-        %{name: "pro_gen", source: {:path, Path.expand("../../pro_gen", File.cwd!())}},
+        %{name: "pro_gen", source: {:path, Path.expand("../pro_gen", File.cwd!())}},
         %{name: "my_actions", source: {:path, source_project}}
       ]
 
@@ -157,6 +158,7 @@ defmodule ProGen.CLI.InstallerTest do
   end
 
   describe "install/2 force" do
+    @tag :slow
     test "force: true reinstalls even when already present", %{deps_dir: deps_dir} do
       # Pre-install
       target = Path.join(deps_dir, "some_lib")
@@ -164,7 +166,7 @@ defmodule ProGen.CLI.InstallerTest do
 
       # With force, already_installed? isn't checked - the install proceeds.
       # We verify the flag is accepted without error.
-      libs = [%{name: "pro_gen", source: {:path, Path.expand("../../pro_gen", File.cwd!())}}]
+      libs = [%{name: "pro_gen", source: {:path, Path.expand("../pro_gen", File.cwd!())}}]
 
       case Installer.install(libs, force: true) do
         {:ok, summary} ->
