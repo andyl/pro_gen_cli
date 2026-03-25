@@ -42,6 +42,7 @@ defmodule Mix.Tasks.Progen.Validate.Edit do
   defp open_source(name, mod) do
     case ProGen.CLI.source_path(mod) do
       {:ok, path} ->
+        if File.exists?(path) do
           [editor | args] = System.get_env("PROGEN_EDITOR") || "vim __FILE__"
                    |> String.replace("__FILE__", path)
                    |> String.split()
