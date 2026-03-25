@@ -43,7 +43,8 @@ defmodule Mix.Tasks.Progen.Action.Edit do
     case ProGen.CLI.source_path(mod) do
       {:ok, path} ->
         if File.exists?(path) do
-          [editor | args] = System.get_env("PROGEN_EDITOR") || "vim __FILE__"
+          cmd = System.get_env("PROGEN_EDITOR") || "vim __FILE__"
+          [editor | args] = cmd
                    |> String.replace("__FILE__", path)
                    |> IO.inspect(label: "ONE")
                    |> OptionParser.split()
