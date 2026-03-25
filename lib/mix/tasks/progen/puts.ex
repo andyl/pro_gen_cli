@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Progen.Puts do
 
   @impl true
   def run(args) do
+    ProGen.CLI.Bootstrap.ensure_loaded!()
+
     case args do
       [message | _] ->
         ProGen.Script.puts(message)

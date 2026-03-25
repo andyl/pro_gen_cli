@@ -19,6 +19,7 @@ defmodule Mix.Tasks.Progen.Action.List do
 
   @impl true
   def run(args) do
+    ProGen.CLI.Bootstrap.ensure_loaded!()
     Mix.Task.run("app.start")
 
     {opts, _rest} = OptionParser.parse!(args, strict: [format: :string])

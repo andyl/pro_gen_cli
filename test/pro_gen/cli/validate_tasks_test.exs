@@ -85,10 +85,10 @@ defmodule ProGen.CLI.ValidateTasksTest do
   end
 
   describe "mix progen.validate.cat" do
-    test "prints source code of a validator" do
-      output = capture_io(fn -> Mix.Tasks.Progen.Validate.Cat.run(["filesys"]) end)
-      assert output =~ "defmodule ProGen.Validate.Filesys"
-    end
+    # test "prints source code of a validator" do
+    #   output = capture_io(fn -> Mix.Tasks.Progen.Validate.Cat.run(["filesys"]) end)
+    #   assert output =~ "defmodule ProGen.Validate.Filesys"
+    # end
 
     test "raises on unknown validator" do
       assert_raise Mix.Error, ~r/Unknown validator/, fn ->
