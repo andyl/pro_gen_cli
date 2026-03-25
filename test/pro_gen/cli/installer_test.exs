@@ -95,7 +95,10 @@ defmodule ProGen.CLI.InstallerTest do
   end
 
   describe "install/2 with path dep" do
-    test "creates symlink for path dep with compiled ebin", %{deps_dir: deps_dir, tmp_dir: tmp_dir} do
+    test "creates symlink for path dep with compiled ebin", %{
+      deps_dir: deps_dir,
+      tmp_dir: tmp_dir
+    } do
       # Create a mock source project with compiled ebin
       source_project = Path.join(tmp_dir, "my_actions")
       source_ebin = Path.join([source_project, "_build", "dev", "lib", "my_actions", "ebin"])

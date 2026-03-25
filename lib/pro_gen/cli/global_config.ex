@@ -154,7 +154,8 @@ defmodule ProGen.CLI.GlobalConfig do
         {:error, "\"#{name}\": must have exactly one source (path, github, or hex)"}
 
       [_, _ | _] ->
-        {:error, "\"#{name}\": must have exactly one source (path, github, or hex), got: #{Enum.join(sources, ", ")}"}
+        {:error,
+         "\"#{name}\": must have exactly one source (path, github, or hex), got: #{Enum.join(sources, ", ")}"}
 
       [:path] ->
         {:ok, {:path, Map.fetch!(entry, "path")}}

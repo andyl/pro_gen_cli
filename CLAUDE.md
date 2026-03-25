@@ -38,6 +38,10 @@ The dependency direction is one-way: `pro_gen_cli` depends on `pro_gen`, never t
 
 **`ProGen.CLI.GlobalConfig`** — Reads `~/.config/pro_gen/config.yml` (or `.yaml`). Public functions: `config_dir/0`, `deps_dir/0`, `config_path/0`, `read/0` (parses YAML, returns `{:ok, %{libs: list}}` or `{:error, msg}`), `validate/1` (validates lib entries, returns `{:ok, libs}` with normalized source tuples or `{:error, msg}`). Each lib is `%{name: string, source: {:path, p} | {:github, repo} | {:hex, pkg, vsn}}`. Config dir is overridable via `Application.put_env(:pro_gen_cli, :config_dir, path)` for testing.
 
+**`ProGen.CLI.Bootstrap`** — Loads ProGen modules from `~/.config/pro_gen/deps/` at runtime. `ensure_loaded!/0` checks if `ProGen.Actions` is available; if not, calls `load_deps/0` to prepend `deps/*/ebin` to the code path. Raises with install instructions if modules still aren't found. Every Mix task calls `ensure_loaded!/0` first. When running inside a Mix project that depends on `pro_gen`, this is a no-op.
+
+**`ProGen.CLI.Installer`** — Orchestrates `mix progen.install`. `install(libs, opts)` creates a temporary Mix project with all configured deps, runs `mix deps.get && mix deps.compile`, then copies or symlinks ebin dirs into `~/.config/pro_gen/deps/`. For `path:` deps, creates symlinks to the source project's `_build/dev/lib/<name>/ebin` so recompiling the source immediately reflects globally. Supports `force: true` to re-install. Returns `{:ok, summary}` or `{:error, summary}` with `%{installed: [], skipped: [], failed: []}`. If a lib named `"pro_gen"` has a `path:` source, it replaces the default github reference.
+
 **Mix Tasks (10):**
 - `mix progen.action.list` — List all registered actions (table/text/json)
 - `mix progen.action.info <name>` — Show action details
