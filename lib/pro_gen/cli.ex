@@ -16,6 +16,11 @@ defmodule ProGen.CLI do
   def maybe_start_app do
     if Mix.Project.get() do
       Mix.Task.run("app.start")
+      # Elixir 1.15+ prunes code paths not belonging to the project during
+      # compilation (prune_code_paths: true by default in compile.all).
+      # This removes the Bootstrap-added ebin paths from ~/.config/pro_gen/deps/.
+      # Re-add them so ProGen modules can still be autoloaded.
+      ProGen.CLI.Bootstrap.load_deps()
     end
   end
 

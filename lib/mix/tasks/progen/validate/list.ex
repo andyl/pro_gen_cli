@@ -19,8 +19,8 @@ defmodule Mix.Tasks.Progen.Validate.List do
 
   @impl true
   def run(args) do
-    ProGen.CLI.maybe_start_app()
     ProGen.CLI.Bootstrap.ensure_loaded!()
+    ProGen.CLI.maybe_start_app()
 
     {opts, _rest} = OptionParser.parse!(args, strict: [format: :string])
     format = Keyword.get(opts, :format, "table")
