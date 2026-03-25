@@ -13,12 +13,16 @@ defmodule ProGen.CLI.Bootstrap do
   @doc """
   Ensures ProGen modules are available, loading from deps dir if needed.
 
+  For `path:` dependencies installed as symlinks, recompiles the source
+  project first so edited source files are reflected immediately.
+
   Raises if modules cannot be found after loading.
   """
   def ensure_loaded! do
     if Code.ensure_loaded?(ProGen.Actions) do
       :ok
     else
+      recompile_path_deps()
       load_deps()
 
       if Code.ensure_loaded?(ProGen.Actions) do
@@ -60,5 +64,60 @@ defmodule ProGen.CLI.Bootstrap do
     end
 
     :ok
+  end
+
+  @doc """
+  Recompiles `path:` dependencies whose ebin dirs are symlinked.
+
+  Scans `~/.config/pro_gen/deps/*/ebin` for symlinks, derives the source
+  Mix project root from each target, and runs `mix compile` there. This
+  ensures that source edits (e.g. via `mix progen.action.edit`) are
+  compiled into fresh beam files before they are loaded.
+
+  No-op when no symlinked ebin dirs exist.
+  """
+  def recompile_path_deps do
+    deps_dir = GlobalConfig.deps_dir()
+
+    if File.dir?(deps_dir) do
+      deps_dir
+      |> File.ls!()
+      |> Enum.each(fn dep_name ->
+        ebin = Path.join([deps_dir, dep_name, "ebin"])
+
+        with {:ok, target} <- File.read_link(ebin),
+             abs_target = resolve_path(target, Path.dirname(ebin)),
+             root when root != nil <- project_root_from_ebin(abs_target) do
+          System.cmd("mix", ["compile"], cd: root, stderr_to_stdout: true)
+        end
+      end)
+    end
+
+    :ok
+  end
+
+  # Resolves a potentially relative symlink target to an absolute path.
+  defp resolve_path(target, base_dir) do
+    if Path.type(target) == :absolute do
+      target
+    else
+      Path.expand(target, base_dir)
+    end
+  end
+
+  # Derives the Mix project root from an ebin path.
+  #
+  # Standard layout: <project>/_build/<env>/lib/<app>/ebin
+  # So the project root is 5 directories up.
+  defp project_root_from_ebin(ebin_path) do
+    root =
+      ebin_path
+      |> Path.dirname()
+      |> Path.dirname()
+      |> Path.dirname()
+      |> Path.dirname()
+      |> Path.dirname()
+
+    if File.exists?(Path.join(root, "mix.exs")), do: root
   end
 end

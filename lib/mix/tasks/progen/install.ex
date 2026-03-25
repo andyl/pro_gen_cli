@@ -21,12 +21,8 @@ defmodule Mix.Tasks.Progen.Install do
 
   alias ProGen.CLI.{Bootstrap, GlobalConfig, Installer}
 
-  @cache_keys [
-    {ProGen.Actions, :actions_list},
-    {ProGen.Actions, :actions_map},
-    {ProGen.Validations, :validations_list},
-    {ProGen.Validations, :validations_map}
-  ]
+  # Cache clearing now delegated to the core library's public API.
+  # Kept as a fallback list in case the module isn't loaded yet.
 
   @impl true
   def run(args) do
@@ -83,13 +79,8 @@ defmodule Mix.Tasks.Progen.Install do
   end
 
   defp clear_caches do
-    Enum.each(@cache_keys, fn key ->
-      try do
-        :persistent_term.erase(key)
-      rescue
-        ArgumentError -> :ok
-      end
-    end)
+    ProGen.Actions.clear_cache()
+    ProGen.Validations.clear_cache()
   end
 
   defp print_summary(summary, primary_names) do

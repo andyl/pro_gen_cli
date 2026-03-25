@@ -23,9 +23,9 @@ defmodule ProGen.CLI.EditTasksTest do
       {:ok, path} = ProGen.CLI.source_path(mod)
 
       if File.exists?(path) do
-        # Set EDITOR to a no-op command so we don't actually open an editor
-        original_editor = System.get_env("EDITOR")
-        System.put_env("EDITOR", "true")
+        # Set PROGEN_EDITOR to a no-op command so we don't actually open an editor
+        original_editor = System.get_env("PROGEN_EDITOR")
+        System.put_env("PROGEN_EDITOR", "true")
 
         try do
           # Should not raise
@@ -34,8 +34,8 @@ defmodule ProGen.CLI.EditTasksTest do
           end)
         after
           if original_editor,
-            do: System.put_env("EDITOR", original_editor),
-            else: System.delete_env("EDITOR")
+            do: System.put_env("PROGEN_EDITOR", original_editor),
+            else: System.delete_env("PROGEN_EDITOR")
         end
       else
         # If source doesn't exist (CI/non-path-dep environment), verify restriction error
@@ -61,9 +61,9 @@ defmodule ProGen.CLI.EditTasksTest do
 
     test "accepts module form name" do
       # Just verify it resolves correctly (don't open editor)
-      # Setting EDITOR to false ensures it fails fast if it tries to open
-      original_editor = System.get_env("EDITOR")
-      System.put_env("EDITOR", "true")
+      # Setting PROGEN_EDITOR to false ensures it fails fast if it tries to open
+      original_editor = System.get_env("PROGEN_EDITOR")
+      System.put_env("PROGEN_EDITOR", "true")
 
       try do
         capture_io(fn ->
@@ -71,8 +71,8 @@ defmodule ProGen.CLI.EditTasksTest do
         end)
       after
         if original_editor,
-          do: System.put_env("EDITOR", original_editor),
-          else: System.delete_env("EDITOR")
+          do: System.put_env("PROGEN_EDITOR", original_editor),
+          else: System.delete_env("PROGEN_EDITOR")
       end
     end
   end
@@ -95,8 +95,8 @@ defmodule ProGen.CLI.EditTasksTest do
       {:ok, path} = ProGen.CLI.source_path(mod)
 
       if File.exists?(path) do
-        original_editor = System.get_env("EDITOR")
-        System.put_env("EDITOR", "true")
+        original_editor = System.get_env("PROGEN_EDITOR")
+        System.put_env("PROGEN_EDITOR", "true")
 
         try do
           capture_io(fn ->
@@ -104,8 +104,8 @@ defmodule ProGen.CLI.EditTasksTest do
           end)
         after
           if original_editor,
-            do: System.put_env("EDITOR", original_editor),
-            else: System.delete_env("EDITOR")
+            do: System.put_env("PROGEN_EDITOR", original_editor),
+            else: System.delete_env("PROGEN_EDITOR")
         end
       else
         assert_raise Mix.Error, ~r/source not available/, fn ->
@@ -119,8 +119,8 @@ defmodule ProGen.CLI.EditTasksTest do
       {:ok, path} = ProGen.CLI.source_path(mod)
 
       if File.exists?(path) do
-        original_editor = System.get_env("EDITOR")
-        System.put_env("EDITOR", "true")
+        original_editor = System.get_env("PROGEN_EDITOR")
+        System.put_env("PROGEN_EDITOR", "true")
 
         try do
           capture_io(fn ->
@@ -128,8 +128,8 @@ defmodule ProGen.CLI.EditTasksTest do
           end)
         after
           if original_editor,
-            do: System.put_env("EDITOR", original_editor),
-            else: System.delete_env("EDITOR")
+            do: System.put_env("PROGEN_EDITOR", original_editor),
+            else: System.delete_env("PROGEN_EDITOR")
         end
       else
         assert_raise Mix.Error, ~r/source not available/, fn ->

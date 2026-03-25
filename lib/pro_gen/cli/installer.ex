@@ -194,6 +194,9 @@ defmodule ProGen.CLI.Installer do
 
     case source do
       {:path, path} ->
+        # Compile the source project so beams are up-to-date before symlinking
+        System.cmd("mix", ["compile"], cd: path, stderr_to_stdout: true)
+
         # Symlink to source project's ebin for live recompile workflow
         real_ebin = Path.join([path, "_build", "dev", "lib", name, "ebin"])
 
