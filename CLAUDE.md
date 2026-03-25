@@ -8,6 +8,10 @@ ProGen CLI is the **command-line interface** package for [ProGen](https://github
 
 This is the **thin archive** — it contains only Mix tasks, shared CLI helpers, and the bootstrap/installer modules. All action and validation modules live in the core `pro_gen` package, which is fetched by `mix progen.install` into `~/.config/pro_gen/deps/`.
 
+## Git Workflow
+
+Do NOT automatically commit changes in this repo. Leave changes unstaged for manual review before committing.
+
 ## Build & Development Commands
 
 ```bash
