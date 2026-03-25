@@ -33,12 +33,26 @@ defmodule Mix.Tasks.Progen.Install do
     {opts, _rest} = OptionParser.parse!(args, strict: [force: :boolean])
     force = Keyword.get(opts, :force, false)
 
+    # Load any previously installed deps first — this makes yaml_elixir
+    # available for config parsing on subsequent installs.
+    Bootstrap.load_deps()
+
     Mix.shell().info("Reading config...")
 
     config =
-      case GlobalConfig.read() do
-        {:ok, config} -> config
-        {:error, msg} -> Mix.raise(msg)
+      try do
+        case GlobalConfig.read() do
+          {:ok, config} -> config
+          {:error, msg} -> Mix.raise(msg)
+        end
+      rescue
+        UndefinedFunctionError ->
+          Mix.raise("""
+          Cannot parse config.yml: YAML parser not yet installed.
+
+          Remove or rename your config file, run `mix progen.install` to install
+          ProGen core first, then restore your config and run again.
+          """)
       end
 
     libs =
@@ -59,7 +73,9 @@ defmodule Mix.Tasks.Progen.Install do
 
     Bootstrap.load_deps()
     clear_caches()
-    print_summary(summary)
+
+    primary_names = MapSet.new(["pro_gen" | Enum.map(libs, & &1.name)])
+    print_summary(summary, primary_names)
 
     if summary.failed != [] do
       Mix.raise("Some libraries failed to install (see above)")
@@ -76,13 +92,13 @@ defmodule Mix.Tasks.Progen.Install do
     end)
   end
 
-  defp print_summary(summary) do
+  defp print_summary(summary, primary_names) do
     if summary.installed != [] do
-      Mix.shell().info("Installed: #{Enum.join(summary.installed, ", ")}")
+      Mix.shell().info("Installed: #{format_names(summary.installed, primary_names)}")
     end
 
     if summary.skipped != [] do
-      Mix.shell().info("Skipped (up to date): #{Enum.join(summary.skipped, ", ")}")
+      Mix.shell().info("Skipped (up to date): #{format_names(summary.skipped, primary_names)}")
     end
 
     Enum.each(summary.failed, fn {name, reason} ->
@@ -91,6 +107,22 @@ defmodule Mix.Tasks.Progen.Install do
 
     if summary.installed == [] and summary.skipped == [] and summary.failed == [] do
       Mix.shell().info("Nothing to install.")
+    end
+  end
+
+  defp format_names(names, primary_names) do
+    {primary, transitive} =
+      Enum.split_with(names, &MapSet.member?(primary_names, &1))
+
+    cond do
+      primary != [] && transitive != [] ->
+        "#{Enum.join(primary, ", ")} (+ #{length(transitive)} dependencies)"
+
+      primary != [] ->
+        Enum.join(primary, ", ")
+
+      true ->
+        "#{length(transitive)} dependencies"
     end
   end
 end

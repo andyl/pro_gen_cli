@@ -42,10 +42,21 @@ defmodule ProGen.CLI.Bootstrap do
     deps_dir = GlobalConfig.deps_dir()
 
     if File.dir?(deps_dir) do
-      deps_dir
-      |> Path.join("*/ebin")
-      |> Path.wildcard()
-      |> Enum.each(&Code.prepend_path/1)
+      ebin_dirs =
+        deps_dir
+        |> Path.join("*/ebin")
+        |> Path.wildcard()
+
+      # Add code paths so modules are loadable
+      Enum.each(ebin_dirs, &Code.prepend_path/1)
+
+      # Load OTP applications so module discovery via
+      # Application.loaded_applications() works
+      for ebin <- ebin_dirs,
+          app_file <- Path.wildcard(Path.join(ebin, "*.app")),
+          app_name = app_file |> Path.basename(".app") |> String.to_atom() do
+        Application.load(app_name)
+      end
     end
 
     :ok

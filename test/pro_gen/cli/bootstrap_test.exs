@@ -42,6 +42,26 @@ defmodule ProGen.CLI.BootstrapTest do
     test "returns :ok when deps dir is empty", %{deps_dir: _deps_dir} do
       assert :ok = Bootstrap.load_deps()
     end
+
+    test "loads OTP applications from .app files", %{deps_dir: deps_dir} do
+      # Create a mock dep with a .app file
+      ebin = Path.join([deps_dir, "mock_app", "ebin"])
+      File.mkdir_p!(ebin)
+
+      app_spec =
+        {:application, :progen_test_mock_app,
+         [vsn: ~c"0.1.0", modules: [], applications: [:kernel, :stdlib]]}
+
+      File.write!(Path.join(ebin, "progen_test_mock_app.app"), :io_lib.format("~p.", [app_spec]))
+
+      Bootstrap.load_deps()
+
+      loaded_apps = Application.loaded_applications() |> Enum.map(&elem(&1, 0))
+      assert :progen_test_mock_app in loaded_apps
+
+      # Clean up
+      Application.unload(:progen_test_mock_app)
+    end
   end
 
   describe "ensure_loaded!/0" do

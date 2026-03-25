@@ -7,6 +7,19 @@ defmodule ProGen.CLI do
   """
 
   @doc """
+  Starts the current Mix project's application if one exists.
+
+  When running inside a Mix project that depends on `pro_gen`, this starts
+  the app normally. When running from the global archive (no project),
+  this is a no-op — the bootstrap has already loaded the modules.
+  """
+  def maybe_start_app do
+    if Mix.Project.get() do
+      Mix.Task.run("app.start")
+    end
+  end
+
+  @doc """
   Resolves an action or validation name reference.
 
   If the reference contains an uppercase letter, it is treated as module form:

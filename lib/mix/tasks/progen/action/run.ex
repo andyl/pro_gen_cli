@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Progen.Action.Run do
   @impl true
   def run(args) do
     ProGen.CLI.Bootstrap.ensure_loaded!()
-    Mix.Task.run("app.start")
+    ProGen.CLI.maybe_start_app()
 
     case args do
       [desc, ref | kv_args] ->

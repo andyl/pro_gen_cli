@@ -143,17 +143,16 @@ defmodule ProGen.CLI.Installer do
     # Build a map of lib name -> source type for path dep detection
     path_deps = Map.new(libs, fn lib -> {lib.name, lib.source} end)
 
-    # Always include pro_gen itself
-    all_names =
-      MapSet.new(["pro_gen" | Enum.map(libs, & &1.name)])
-
     build_dir = Path.join([temp_dir, "_build", "dev", "lib"])
 
+    # Install ALL compiled deps (including transitive), not just explicitly
+    # named ones. This ensures runtime deps like yaml_elixir are available
+    # via the bootstrap code path. Exclude only the temp project itself.
     ebin_dirs =
       if File.dir?(build_dir) do
         build_dir
         |> File.ls!()
-        |> Enum.filter(fn name -> MapSet.member?(all_names, name) end)
+        |> Enum.reject(fn name -> name == "progen_install" end)
         |> Enum.filter(fn name ->
           File.dir?(Path.join([build_dir, name, "ebin"]))
         end)
