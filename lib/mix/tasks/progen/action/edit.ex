@@ -45,7 +45,9 @@ defmodule Mix.Tasks.Progen.Action.Edit do
         if File.exists?(path) do
           [editor | args] = System.get_env("PROGEN_EDITOR") || "vim __FILE__"
                    |> String.replace("__FILE__", path)
+                   |> IO.inspect(label: "ONE")
                    |> OptionParser.split()
+                   |> IO.inspect(label: "TWO")
           System.cmd(editor, args)
         else
           Mix.raise(
