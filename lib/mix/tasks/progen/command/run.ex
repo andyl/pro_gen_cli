@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Progen.Command.Run do
   ```
 
   The first argument is the commit message / description. The second is the
-  shell command to execute via `ProGen.Sys.cmd/1`. After success, auto-commits
+  shell command to execute via `ProGen.Xt.Sys.cmd/1`. After success, auto-commits
   with commit type `"chore(command)"`.
   """
 
@@ -22,9 +22,9 @@ defmodule Mix.Tasks.Progen.Command.Run do
 
     case args do
       [desc, command | _] ->
-        case ProGen.Sys.cmd(command) do
+        case ProGen.Xt.Sys.cmd(command) do
           :ok ->
-            ProGen.AutoCommit.auto_commit(desc, "chore(command)")
+            ProGen.Xt.AutoCommit.auto_commit(desc, "chore(command)")
 
           {:error, code} ->
             Mix.raise("Command failed with exit code #{code}")

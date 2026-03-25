@@ -50,7 +50,7 @@ defmodule Mix.Tasks.Progen.Action.Run do
             Mix.raise(error_msg)
 
           _ok ->
-            ProGen.AutoCommit.auto_commit(desc, commit_type, commit_opts)
+            ProGen.Xt.AutoCommit.auto_commit(desc, commit_type, commit_opts)
         end
 
       _ ->
