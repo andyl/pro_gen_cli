@@ -49,7 +49,7 @@ defmodule Mix.Tasks.Progen.Action.Edit do
                    |> IO.inspect(label: "ONE")
                    |> OptionParser.split()
                    |> IO.inspect(label: "TWO")
-          System.cmd(editor, args)
+          System.cmd(editor, args, stderr_to_stdout: true, into: "")
         else
           Mix.raise(
             ~s(Cannot edit "#{name}": source not available.\nOnly path: dependencies can be edited.)

@@ -47,7 +47,7 @@ defmodule Mix.Tasks.Progen.Validate.Edit do
           [editor | args] = cmd
                    |> String.replace("__FILE__", path)
                    |> OptionParser.split()
-          System.cmd(editor, args)
+          System.cmd(editor, args, stderr_to_stdout: true, into: "")
         else
           Mix.raise(
             ~s(Cannot edit "#{name}": source not available.\nOnly path: dependencies can be edited.)
