@@ -36,6 +36,8 @@ The dependency direction is one-way: `pro_gen_cli` depends on `pro_gen`, never t
 
 **`ProGen.CLI`** — Shared helpers for Mix tasks: name resolution (`resolve_name/1`), argument parsing (`parse_kv_args/1`, `parse_checks/1`), output formatting (`format_table/1`, `format_list_json/1`, `format_list_text/1`), and source path lookup (`source_path/1`).
 
+**`ProGen.CLI.GlobalConfig`** — Reads `~/.config/pro_gen/config.yml` (or `.yaml`). Public functions: `config_dir/0`, `deps_dir/0`, `config_path/0`, `read/0` (parses YAML, returns `{:ok, %{libs: list}}` or `{:error, msg}`), `validate/1` (validates lib entries, returns `{:ok, libs}` with normalized source tuples or `{:error, msg}`). Each lib is `%{name: string, source: {:path, p} | {:github, repo} | {:hex, pkg, vsn}}`. Config dir is overridable via `Application.put_env(:pro_gen_cli, :config_dir, path)` for testing.
+
 **Mix Tasks (10):**
 - `mix progen.action.list` — List all registered actions (table/text/json)
 - `mix progen.action.info <name>` — Show action details
