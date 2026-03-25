@@ -3,6 +3,11 @@ defmodule ProGen.CLI.ActionTasksTest do
 
   import ExUnit.CaptureIO
 
+  setup do
+    Application.put_env(:pro_gen, :auto_commit, false)
+    on_exit(fn -> Application.delete_env(:pro_gen, :auto_commit) end)
+  end
+
   describe "mix progen.action.list" do
     test "table format lists actions with aligned columns" do
       output = capture_io(fn -> Mix.Tasks.Progen.Action.List.run([]) end)

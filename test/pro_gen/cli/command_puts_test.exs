@@ -3,6 +3,11 @@ defmodule ProGen.CLI.CommandPutsTest do
 
   import ExUnit.CaptureIO
 
+  setup do
+    Application.put_env(:pro_gen, :auto_commit, false)
+    on_exit(fn -> Application.delete_env(:pro_gen, :auto_commit) end)
+  end
+
   describe "mix progen.command.run" do
     test "runs a shell command" do
       output =

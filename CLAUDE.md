@@ -46,7 +46,8 @@ The dependency direction is one-way: `pro_gen_cli` depends on `pro_gen`, never t
 
 **`ProGen.CLI.Installer`** — Orchestrates `mix progen.install`. `install(libs, opts)` creates a temporary Mix project with all configured deps, runs `mix deps.get && mix deps.compile`, then copies or symlinks ebin dirs into `~/.config/pro_gen/deps/`. For `path:` deps, creates symlinks to the source project's `_build/dev/lib/<name>/ebin` so recompiling the source immediately reflects globally. Supports `force: true` to re-install. Returns `{:ok, summary}` or `{:error, summary}` with `%{installed: [], skipped: [], failed: []}`. If a lib named `"pro_gen"` has a `path:` source, it replaces the default github reference.
 
-**Mix Tasks (10):**
+**Mix Tasks (11):**
+- `mix progen.install [--force]` — Install ProGen and configured libraries globally
 - `mix progen.action.list` — List all registered actions (table/text/json)
 - `mix progen.action.info <name>` — Show action details
 - `mix progen.action.run <desc> <name> [args]` — Execute an action
