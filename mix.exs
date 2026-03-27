@@ -34,7 +34,9 @@ defmodule ProGenCLI.MixProject do
 
     [
       {:pro_gen, pro_gen_opts},
-      {:yaml_elixir, "~> 2.11"}
+      {:yaml_elixir, "~> 2.11"},
+      {:git_ops, "~> 2.9"},
+      {:commit_hook, "~> 0.4"}
     ]
   end
 end
